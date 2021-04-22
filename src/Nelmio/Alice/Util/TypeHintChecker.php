@@ -48,11 +48,18 @@ class TypeHintChecker
         $reflection = new \ReflectionMethod($object, $method);
         $params = $reflection->getParameters();
 
-        if (false === array_key_exists($parameterNumber, $params) || null === $params[$parameterNumber]->getClass()) {
+        if (false === array_key_exists($parameterNumber, $params)) {
             return $value;
+        } else {
+            $type = $params[$parameterNumber]->getType();
+            if ($type === null) {
+                return $value;
+            }
+            if ($type->isBuiltin()) {
+                return $value;
+            }
         }
-
-        $hintedClass = $params[$parameterNumber]->getClass()->getName();
+        $hintedClass = $type->getName();
         if ('DateTime' === $hintedClass) {
             return $this->createDate($value, $reflection, $method);
         }
